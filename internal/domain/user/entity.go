@@ -3,8 +3,9 @@ package user
 import "errors"
 
 var (
-	ErrUserInactive    = errors.New("user is inactive")
-	ErrInvalidPassword = errors.New("invalid password")
+	ErrUserInactive           = errors.New("user is inactive")
+	ErrInvalidPassword        = errors.New("invalid password")
+	ErrEmailAlreadyRegistered = errors.New("email already registered")
 )
 
 type User struct {

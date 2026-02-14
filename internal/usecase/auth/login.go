@@ -13,13 +13,18 @@ type LoginUsecase struct {
 	TokenMaker TokenGenerator
 }
 
+func NewLoginUsecase(repo user.Repository, gen TokenGenerator) *LoginUsecase {
+	return &LoginUsecase{UserRepo: repo, TokenMaker: gen}
+}
+
 type LoginRequest struct {
 	Email    string
 	Password string
 }
 
 type LoginResponse struct {
-	AccessToken string `json:"access_token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 func (uc *LoginUsecase) Execute(req LoginRequest) (*LoginResponse, error) {
@@ -32,12 +37,18 @@ func (uc *LoginUsecase) Execute(req LoginRequest) (*LoginResponse, error) {
 		return nil, ErrInvalidCredentials
 	}
 
-	token, err := uc.TokenMaker.Generate(u.ID)
+	access, err := uc.TokenMaker.GenerateAccess(u.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	refresh, err := uc.TokenMaker.GenerateRefresh(u.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &LoginResponse{
-		AccessToken: token,
+		AccessToken:  access,
+		RefreshToken: refresh,
 	}, nil
 }

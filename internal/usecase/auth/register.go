@@ -1,14 +1,17 @@
 package auth
 
 import (
-	"errors"
-
 	"github.com/Nurdiansyah15/ddd-arch/internal/domain/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type RegisterUsecase struct {
-	UserRepo user.Repository
+	UserRepo    user.Repository
+	UserService *user.UserService // domain service
+}
+
+func NewRegisterUsecase(repo user.Repository, svc *user.UserService) *RegisterUsecase {
+	return &RegisterUsecase{UserRepo: repo, UserService: svc}
 }
 
 type RegisterRequest struct {
@@ -22,9 +25,9 @@ type RegisterResponse struct {
 }
 
 func (uc *RegisterUsecase) Execute(req RegisterRequest) (*RegisterResponse, error) {
-	existing, _ := uc.UserRepo.FindByEmail(req.Email)
-	if existing != nil {
-		return nil, errors.New("email already registered")
+	// Domain Service: cek apakah email sudah dipakai
+	if err := uc.UserService.CheckEmailAvailability(req.Email); err != nil {
+		return nil, err
 	}
 
 	hash, err := bcrypt.GenerateFromPassword(

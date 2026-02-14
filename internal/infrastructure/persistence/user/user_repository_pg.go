@@ -32,3 +32,47 @@ func (r *UserRepositoryPG) Create(user *user.User) error {
 	`, user.Email, user.PasswordHash, user.IsActive).
 		Scan(&user.ID)
 }
+
+func (r *UserRepositoryPG) FindByID(id int64) (*user.User, error) {
+	var u user.User
+	err := r.DB.Get(&u, `
+		SELECT id, email, password_hash, is_active
+		FROM users
+		WHERE id = $1
+	`, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}
+
+func (r *UserRepositoryPG) Update(u *user.User) error {
+	_, err := r.DB.Exec(`
+		UPDATE users
+		SET email = $1, password_hash = $2, is_active = $3
+		WHERE id = $4
+	`, u.Email, u.PasswordHash, u.IsActive, u.ID)
+	return err
+}
+
+func (r *UserRepositoryPG) Delete(id int64) error {
+	_, err := r.DB.Exec(`
+		DELETE FROM users WHERE id = $1
+	`, id)
+	return err
+}
+
+func (r *UserRepositoryPG) List() ([]*user.User, error) {
+	var users []*user.User
+	err := r.DB.Select(&users, `
+		SELECT id, email, password_hash, is_active
+		FROM users
+		ORDER BY id
+	`)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
