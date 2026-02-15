@@ -1,0 +1,21 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "/go/bin/swag init -g cmd/main.go --output docs --parseDependency --parseInternal=false && go build -o ./tmp/main ./cmd/main.go"
+  bin = "./tmp/main"
+  delay = 5000  # ms
+  exclude_dir = ["vendor", "tmp", "docs", "migrations", ".git"]
+  include_ext = ["go", "env", "html", "yaml"]  # Tambah ekstensi yang perlu di-watch
+  kill_delay = "1s"
+  send_interrupt = true
+  stop_on_error = true
+
+[log]
+  time = true
+  color = true  # Tambahkan warna untuk log
+
+# Wajib untuk Docker di Windows/WSL2
+[air]
+  watch_polling = true  # Force polling mode
+  polling_interval = 5000

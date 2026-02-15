@@ -5,11 +5,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type UserRepositoryMySQL struct {
+type userRepositoryMySQL struct {
 	DB *sqlx.DB
 }
 
-func (r *UserRepositoryMySQL) FindByEmail(email string) (*user.User, error) {
+func NewUserRepositoryMySQL(db *sqlx.DB) user.Repository {
+	return &userRepositoryMySQL{DB: db}
+}
+
+func (r *userRepositoryMySQL) FindByEmail(email string) (*user.User, error) {
 	var u user.User
 	err := r.DB.Get(&u, `
 		SELECT id, email, password_hash, is_active
@@ -24,7 +28,7 @@ func (r *UserRepositoryMySQL) FindByEmail(email string) (*user.User, error) {
 	return &u, nil
 }
 
-func (r *UserRepositoryMySQL) Create(user *user.User) error {
+func (r *userRepositoryMySQL) Create(user *user.User) error {
 	res, err := r.DB.Exec(`
 		INSERT INTO users (email, password_hash, is_active)
 		VALUES (?, ?, ?)
@@ -40,7 +44,7 @@ func (r *UserRepositoryMySQL) Create(user *user.User) error {
 	return nil
 }
 
-func (r *UserRepositoryMySQL) FindByID(id int64) (*user.User, error) {
+func (r *userRepositoryMySQL) FindByID(id int64) (*user.User, error) {
 	var u user.User
 	err := r.DB.Get(&u, `
 		SELECT id, email, password_hash, is_active
@@ -55,7 +59,7 @@ func (r *UserRepositoryMySQL) FindByID(id int64) (*user.User, error) {
 	return &u, nil
 }
 
-func (r *UserRepositoryMySQL) Update(u *user.User) error {
+func (r *userRepositoryMySQL) Update(u *user.User) error {
 	_, err := r.DB.Exec(`
 		UPDATE users
 		SET email = ?, password_hash = ?, is_active = ?
@@ -64,14 +68,14 @@ func (r *UserRepositoryMySQL) Update(u *user.User) error {
 	return err
 }
 
-func (r *UserRepositoryMySQL) Delete(id int64) error {
+func (r *userRepositoryMySQL) Delete(id int64) error {
 	_, err := r.DB.Exec(`
 		DELETE FROM users WHERE id = ?
 	`, id)
 	return err
 }
 
-func (r *UserRepositoryMySQL) List() ([]*user.User, error) {
+func (r *userRepositoryMySQL) List() ([]*user.User, error) {
 	var users []*user.User
 	err := r.DB.Select(&users, `
 		SELECT id, email, password_hash, is_active

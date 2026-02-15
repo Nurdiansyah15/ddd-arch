@@ -1,0 +1,49 @@
+services:
+  app:
+    container_name: ddd-arch-app
+    build:
+      context: .
+      dockerfile: docker/dev.Dockerfile
+    ports:
+      - "${API_PORT:-2000}:2000"
+    volumes:
+      - .:/app
+      - go-mod:/go/pkg/mod
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ddd-arch-net
+    environment:
+      AIR_WATCH_POLLING: true
+      AIR_POLLING_INTERVAL: 1000
+    restart: unless-stopped
+  postgres:
+    container_name: ddd-arch-postgres
+    image: postgres:15
+    ports:
+      - "${POSTGRES_EXPOSE_PORT:-5433}:5432"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ddd_arch}
+      POSTGRES_DB: ${POSTGRES_DB:-ddd_arch}
+      POSTGRES_USER: ${POSTGRES_USER:-ddd_arch}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ddd_arch}"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - ddd-arch-net
+    restart: unless-stopped
+
+volumes:
+  pg-data:
+  go-mod:
+
+networks:
+  ddd-arch-net:
+    driver: bridge

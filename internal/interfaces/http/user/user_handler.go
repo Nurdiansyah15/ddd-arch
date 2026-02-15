@@ -8,14 +8,27 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type UserHandler struct {
+type userHandler struct {
 	CreateUC *useruc.CreateUsecase
 	ListUC   *useruc.ListUsecase
 	UpdateUC *useruc.UpdateUsecase
 	DeleteUC *useruc.DeleteUsecase
 }
 
-func (h *UserHandler) Create(c *gin.Context) {
+func NewUserHandler(createUC *useruc.CreateUsecase, listUC *useruc.ListUsecase, updateUC *useruc.UpdateUsecase, deleteUC *useruc.DeleteUsecase) *userHandler {
+	return &userHandler{CreateUC: createUC, ListUC: listUC, UpdateUC: updateUC, DeleteUC: deleteUC}
+}
+
+// @Summary Create a new user
+// @Description Create a new user with the given email and password
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body useruc.CreateRequest true "Create user request"
+// @Success 201 {object} useruc.CreateResponse
+// @Failure 400 {object} gin.H
+// @Router /api/v1/users [post]
+func (h *userHandler) Create(c *gin.Context) {
 	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -33,7 +46,15 @@ func (h *UserHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
-func (h *UserHandler) List(c *gin.Context) {
+// @Summary Get all users
+// @Description Get all users
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} []useruc.ListResponseItem
+// @Failure 500 {object} gin.H
+// @Router /api/v1/users [get]
+func (h *userHandler) List(c *gin.Context) {
 	resp, err := h.ListUC.Execute()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -42,7 +63,17 @@ func (h *UserHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *UserHandler) Get(c *gin.Context) {
+// @Summary Get a user by ID
+// @Description Get a user by ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} gin.H
+// @Failure 400 {object} gin.H
+// @Failure 404 {object} gin.H
+// @Router /api/v1/users/{id} [get]
+func (h *userHandler) Get(c *gin.Context) {
 	idParam := c.Param("id")
 	var id int64
 	_, err := fmt.Sscan(idParam, &id)
@@ -67,7 +98,18 @@ func (h *UserHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"id": u.ID, "email": u.Email})
 }
 
-func (h *UserHandler) Update(c *gin.Context) {
+// @Summary Update a user by ID
+// @Description Update a user by ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Param request body useruc.UpdateRequest true "Update user request"
+// @Success 200 {object} useruc.UpdateResponse
+// @Failure 400 {object} gin.H
+// @Failure 404 {object} gin.H
+// @Router /api/v1/users/{id} [put]
+func (h *userHandler) Update(c *gin.Context) {
 	idParam := c.Param("id")
 	var id int64
 	_, err := fmt.Sscan(idParam, &id)
@@ -92,7 +134,17 @@ func (h *UserHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *UserHandler) Delete(c *gin.Context) {
+// @Summary Delete a user by ID
+// @Description Delete a user by ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 204 {object} nil
+// @Failure 400 {object} gin.H
+// @Failure 404 {object} gin.H
+// @Router /api/v1/users/{id} [delete]
+func (h *userHandler) Delete(c *gin.Context) {
 	idParam := c.Param("id")
 	var id int64
 	_, err := fmt.Sscan(idParam, &id)

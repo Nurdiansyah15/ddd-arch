@@ -9,9 +9,7 @@ import (
 )
 
 func SetupUserRoutes(r *gin.RouterGroup, db *sqlx.DB) {
-	userRepo := &userrepo.UserRepositoryPG{DB: db}
-
-	// Domain Service
+	userRepo := userrepo.NewUserRepositoryPG(db)
 	userSvc := userdomain.NewUserService(userRepo)
 
 	createUc := useruc.NewCreateUsecase(userRepo, userSvc)
@@ -19,7 +17,7 @@ func SetupUserRoutes(r *gin.RouterGroup, db *sqlx.DB) {
 	updateUc := useruc.NewUpdateUsecase(userRepo)
 	deleteUc := useruc.NewDeleteUsecase(userRepo)
 
-	h := &UserHandler{CreateUC: createUc, ListUC: listUc, UpdateUC: updateUc, DeleteUC: deleteUc}
+	h := NewUserHandler(createUc, listUc, updateUc, deleteUc)
 
 	ur := r.Group("/users")
 	ur.POST("/", h.Create)

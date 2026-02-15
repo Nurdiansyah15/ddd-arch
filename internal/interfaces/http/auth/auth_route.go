@@ -19,7 +19,7 @@ var _ useauth.TokenService = (*token.TokenService)(nil)
 
 func SetupAuthRoutes(r *gin.RouterGroup, db *sqlx.DB) {
 
-	userRepo := &userrepo.UserRepositoryPG{DB: db}
+	userRepo := userrepo.NewUserRepositoryPG(db)
 
 	// Domain Service — business rule yang bukan milik satu entity
 	userSvc := userdomain.NewUserService(userRepo)

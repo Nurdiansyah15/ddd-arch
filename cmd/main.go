@@ -3,14 +3,23 @@ package main
 import (
 	"log"
 
+	_ "github.com/Nurdiansyah15/ddd-arch/docs"
+
 	"github.com/Nurdiansyah15/ddd-arch/internal/config"
-	"github.com/Nurdiansyah15/ddd-arch/internal/infrastructure/database"
+	"github.com/Nurdiansyah15/ddd-arch/internal/infrastructure/database/mysql"
+	"github.com/Nurdiansyah15/ddd-arch/internal/infrastructure/database/postgres"
 	"github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 )
 
+// @title Api Doc
+// @version 1.0
+// @description API for App System
+// @securityDefinitions.apikey AuthBearer
+// @in header
+// @name Authorization
 func main() {
 	// Load .env (local only)
 	_ = godotenv.Load()
@@ -26,9 +35,9 @@ func main() {
 
 	switch cfg.DB.Driver {
 	case "mysql":
-		db, err = database.NewMySQL(cfg.DB)
+		db, err = mysql.NewMySQL(cfg.DB)
 	case "postgres":
-		db, err = database.NewPostgres(cfg.DB.DSN())
+		db, err = postgres.NewPostgres(cfg.DB.DSN())
 	default:
 		log.Fatal("unsupported db driver")
 	}

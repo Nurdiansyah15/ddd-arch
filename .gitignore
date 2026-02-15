@@ -1,0 +1,66 @@
+# Binaries & executables
+/app
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Output folders
+bin/
+build/
+dist/
+
+# Dependency cache
+vendor/
+
+# IDE/editor folders
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Go tools
+*.coverprofile
+*.test
+*.prof
+
+# Env & secrets
+.env
+.envrc
+*.key
+*.pem
+*.crt
+
+# Swagger
+docs/swagger.json
+docs/swagger.yaml
+# docs/docs.go
+
+# Air (live reload) temp file
+tmp/
+tmp.*.tmp
+# .air.toml
+
+# Docker & Compose artifacts
+docker-compose.override.yml
+*.pid
+
+# Go module tools
+go.work
+go.work.sum
+
+# GoLand/JetBrains specific
+*.iml
+
+public/

@@ -5,11 +5,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type UserRepositoryPG struct {
+type userRepositoryPG struct {
 	DB *sqlx.DB
 }
 
-func (r *UserRepositoryPG) FindByEmail(email string) (*user.User, error) {
+func NewUserRepositoryPG(db *sqlx.DB) user.Repository {
+	return &userRepositoryPG{DB: db}
+}
+
+func (r *userRepositoryPG) FindByEmail(email string) (*user.User, error) {
 	var u user.User
 	err := r.DB.Get(&u, `
 		SELECT id, email, password_hash, is_active
@@ -24,7 +28,7 @@ func (r *UserRepositoryPG) FindByEmail(email string) (*user.User, error) {
 	return &u, nil
 }
 
-func (r *UserRepositoryPG) Create(user *user.User) error {
+func (r *userRepositoryPG) Create(user *user.User) error {
 	return r.DB.QueryRowx(`
 		INSERT INTO users (email, password_hash, is_active)
 		VALUES ($1, $2, $3)
@@ -33,7 +37,7 @@ func (r *UserRepositoryPG) Create(user *user.User) error {
 		Scan(&user.ID)
 }
 
-func (r *UserRepositoryPG) FindByID(id int64) (*user.User, error) {
+func (r *userRepositoryPG) FindByID(id int64) (*user.User, error) {
 	var u user.User
 	err := r.DB.Get(&u, `
 		SELECT id, email, password_hash, is_active
@@ -48,7 +52,7 @@ func (r *UserRepositoryPG) FindByID(id int64) (*user.User, error) {
 	return &u, nil
 }
 
-func (r *UserRepositoryPG) Update(u *user.User) error {
+func (r *userRepositoryPG) Update(u *user.User) error {
 	_, err := r.DB.Exec(`
 		UPDATE users
 		SET email = $1, password_hash = $2, is_active = $3
@@ -57,14 +61,14 @@ func (r *UserRepositoryPG) Update(u *user.User) error {
 	return err
 }
 
-func (r *UserRepositoryPG) Delete(id int64) error {
+func (r *userRepositoryPG) Delete(id int64) error {
 	_, err := r.DB.Exec(`
 		DELETE FROM users WHERE id = $1
 	`, id)
 	return err
 }
 
-func (r *UserRepositoryPG) List() ([]*user.User, error) {
+func (r *userRepositoryPG) List() ([]*user.User, error) {
 	var users []*user.User
 	err := r.DB.Select(&users, `
 		SELECT id, email, password_hash, is_active
