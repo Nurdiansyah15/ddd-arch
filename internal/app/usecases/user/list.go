@@ -1,14 +1,12 @@
 package user
 
-import (
-	userdomain "github.com/Nurdiansyah15/ddd-arch/internal/domain/user"
-)
+import "github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
 
 type ListUsecase struct {
-	Repo userdomain.Repository
+	Repo user.Repository
 }
 
-func NewListUsecase(repo userdomain.Repository) *ListUsecase {
+func NewListUsecase(repo user.Repository) *ListUsecase {
 	return &ListUsecase{Repo: repo}
 }
 

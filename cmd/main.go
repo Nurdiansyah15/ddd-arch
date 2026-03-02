@@ -8,7 +8,7 @@ import (
 	"github.com/Nurdiansyah15/ddd-arch/internal/config"
 	"github.com/Nurdiansyah15/ddd-arch/internal/infrastructure/database/mysql"
 	"github.com/Nurdiansyah15/ddd-arch/internal/infrastructure/database/postgres"
-	"github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http"
+	http "github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"

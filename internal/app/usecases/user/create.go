@@ -1,15 +1,13 @@
 package user
 
-import (
-	userdomain "github.com/Nurdiansyah15/ddd-arch/internal/domain/user"
-)
+import "github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
 
 type CreateUsecase struct {
-	Repo        userdomain.Repository
-	UserService *userdomain.UserService // domain service
+	Repo        user.Repository
+	UserService *user.UserService // domain service
 }
 
-func NewCreateUsecase(repo userdomain.Repository, svc *userdomain.UserService) *CreateUsecase {
+func NewCreateUsecase(repo user.Repository, svc *user.UserService) *CreateUsecase {
 	return &CreateUsecase{Repo: repo, UserService: svc}
 }
 
@@ -29,12 +27,12 @@ func (uc *CreateUsecase) Execute(req CreateRequest) (*CreateResponse, error) {
 		return nil, err
 	}
 
-	hash, err := userdomain.HashPassword(req.Password)
+	hash, err := user.HashPassword(req.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	u := &userdomain.User{
+	u := &user.User{
 		Email:        req.Email,
 		PasswordHash: hash,
 		IsActive:     true,

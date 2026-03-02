@@ -4,11 +4,13 @@ import (
 	"os"
 	"time"
 
-	userdomain "github.com/Nurdiansyah15/ddd-arch/internal/domain/user"
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
+	useauth "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/auth"
+	userprofile "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/user"
 	userrepo "github.com/Nurdiansyah15/ddd-arch/internal/infrastructure/persistence/user"
 	"github.com/Nurdiansyah15/ddd-arch/internal/infrastructure/token"
-	useauth "github.com/Nurdiansyah15/ddd-arch/internal/usecase/auth"
-	userprofile "github.com/Nurdiansyah15/ddd-arch/internal/usecase/user"
+	"github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http/handlers/auth"
+	authMiddleware "github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http/middlewares/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 )
@@ -22,7 +24,7 @@ func SetupAuthRoutes(r *gin.RouterGroup, db *sqlx.DB) {
 	userRepo := userrepo.NewUserRepositoryPG(db)
 
 	// Domain Service — business rule yang bukan milik satu entity
-	userSvc := userdomain.NewUserService(userRepo)
+	userSvc := user.NewUserService(userRepo)
 
 	// token service (use env JWT_SECRET, default fallback)
 	secret := os.Getenv("JWT_SECRET")
@@ -37,7 +39,7 @@ func SetupAuthRoutes(r *gin.RouterGroup, db *sqlx.DB) {
 	refreshUc := useauth.NewRefreshUsecase(tokenSvc)
 	profileUc := userprofile.NewProfileUsecase(userRepo)
 
-	authHandler := &AuthHandler{LoginUC: loginUc, RegisterUC: registerUc, RefreshUC: refreshUc, ProfileUC: profileUc}
+	authHandler := &auth.AuthHandler{LoginUC: loginUc, RegisterUC: registerUc, RefreshUC: refreshUc, ProfileUC: profileUc}
 
 	authRoute := r.Group("/auth")
 
@@ -46,7 +48,7 @@ func SetupAuthRoutes(r *gin.RouterGroup, db *sqlx.DB) {
 	authRoute.POST("/refresh", authHandler.Refresh)
 
 	// protected routes
-	authRoute.Use(AuthMiddleware(tokenSvc))
+	authRoute.Use(authMiddleware.AuthMiddleware(tokenSvc))
 	{
 		authRoute.GET("/me", authHandler.GetMe)
 	}

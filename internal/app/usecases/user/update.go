@@ -3,14 +3,14 @@ package user
 import (
 	"errors"
 
-	userdomain "github.com/Nurdiansyah15/ddd-arch/internal/domain/user"
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
 )
 
 type UpdateUsecase struct {
-	Repo userdomain.Repository
+	Repo user.Repository
 }
 
-func NewUpdateUsecase(repo userdomain.Repository) *UpdateUsecase {
+func NewUpdateUsecase(repo user.Repository) *UpdateUsecase {
 	return &UpdateUsecase{Repo: repo}
 }
 
@@ -41,7 +41,7 @@ func (uc *UpdateUsecase) Execute(req UpdateRequest) (*UpdateResponse, error) {
 		u.Email = *req.Email
 	}
 	if req.Password != nil {
-		h, err := userdomain.HashPassword(*req.Password)
+		h, err := user.HashPassword(*req.Password)
 		if err != nil {
 			return nil, err
 		}

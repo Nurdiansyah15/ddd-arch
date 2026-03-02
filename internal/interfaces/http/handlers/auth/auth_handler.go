@@ -3,8 +3,8 @@ package auth
 import (
 	"net/http"
 
-	authuc "github.com/Nurdiansyah15/ddd-arch/internal/usecase/auth"
-	useruc "github.com/Nurdiansyah15/ddd-arch/internal/usecase/user"
+	authuc "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/auth"
+	useruc "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/user"
 	"github.com/gin-gonic/gin"
 )
 

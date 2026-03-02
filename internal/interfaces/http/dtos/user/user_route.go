@@ -1,16 +1,16 @@
 package user
 
 import (
-	userdomain "github.com/Nurdiansyah15/ddd-arch/internal/domain/user"
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
+	useruc "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/user"
 	userrepo "github.com/Nurdiansyah15/ddd-arch/internal/infrastructure/persistence/user"
-	useruc "github.com/Nurdiansyah15/ddd-arch/internal/usecase/user"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 )
 
 func SetupUserRoutes(r *gin.RouterGroup, db *sqlx.DB) {
 	userRepo := userrepo.NewUserRepositoryPG(db)
-	userSvc := userdomain.NewUserService(userRepo)
+	userSvc := user.NewUserService(userRepo)
 
 	createUc := useruc.NewCreateUsecase(userRepo, userSvc)
 	listUc := useruc.NewListUsecase(userRepo)

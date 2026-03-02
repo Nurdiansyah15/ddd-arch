@@ -3,7 +3,7 @@ package auth
 import (
 	"errors"
 
-	"github.com/Nurdiansyah15/ddd-arch/internal/domain/user"
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
 )
 
 var ErrInvalidCredentials = errors.New("invalid credentials")

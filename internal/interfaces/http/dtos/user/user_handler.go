@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	useruc "github.com/Nurdiansyah15/ddd-arch/internal/usecase/user"
+	useruc "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/user"
 	"github.com/gin-gonic/gin"
 )
 

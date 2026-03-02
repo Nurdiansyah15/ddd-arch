@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/Nurdiansyah15/ddd-arch/internal/usecase/auth"
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/auth"
 	"github.com/gofiber/fiber/v2"
 )
 

@@ -1,10 +1,10 @@
 package user
 
-import userdomain "github.com/Nurdiansyah15/ddd-arch/internal/domain/user"
+import "github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
 
 // ProfileUsecase depends on the domain Repository interface.
 type ProfileUsecase struct {
-	Repo userdomain.Repository
+	Repo user.Repository
 }
 
 type ProfileResponse struct {
@@ -12,7 +12,7 @@ type ProfileResponse struct {
 	Email string `json:"email"`
 }
 
-func NewProfileUsecase(repo userdomain.Repository) *ProfileUsecase {
+func NewProfileUsecase(repo user.Repository) *ProfileUsecase {
 	return &ProfileUsecase{Repo: repo}
 }
 
