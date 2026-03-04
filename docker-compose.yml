@@ -3,7 +3,7 @@ services:
     container_name: ddd-arch-app
     build:
       context: .
-      dockerfile: docker/dev.Dockerfile
+      dockerfile: docker/Dockerfile
     ports:
       - "${API_PORT:-2000}:2000"
     volumes:

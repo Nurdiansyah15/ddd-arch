@@ -6,8 +6,18 @@ import (
 
 var ErrInvalidRefresh = errors.New("invalid refresh token")
 
+// TokenService defines the minimal token operations required by the usecase.
+type TokenService interface {
+	ValidateRefresh(string) (int64, error)
+	GenerateAccess(int64) (string, error)
+}
+
 type RefreshUsecase struct {
 	TokenSvc TokenService
+}
+
+func NewRefreshUsecase(ts TokenService) *RefreshUsecase {
+	return &RefreshUsecase{TokenSvc: ts}
 }
 
 type RefreshRequest struct {
@@ -30,14 +40,4 @@ func (uc *RefreshUsecase) Execute(req RefreshRequest) (*RefreshResponse, error) 
 	}
 
 	return &RefreshResponse{AccessToken: access}, nil
-}
-
-// TokenService defines the minimal token operations required by the usecase.
-type TokenService interface {
-	ValidateRefresh(string) (int64, error)
-	GenerateAccess(int64) (string, error)
-}
-
-func NewRefreshUsecase(ts TokenService) *RefreshUsecase {
-	return &RefreshUsecase{TokenSvc: ts}
 }

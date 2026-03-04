@@ -1,6 +1,14 @@
 package token
 
-import "time"
+import (
+	"time"
+
+	useauth "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/auth"
+)
+
+// compile-time assertions: ensure infra TokenService implements usecase contracts
+var _ useauth.TokenGenerator = (*TokenService)(nil)
+var _ useauth.TokenService = (*TokenService)(nil)
 
 // TokenService centralizes access/refresh generation and validation
 type TokenService struct {

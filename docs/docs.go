@@ -35,7 +35,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_Nurdiansyah15_ddd-arch_internal_usecase_user.ListResponseItem"
+                                "$ref": "#/definitions/github_com_Nurdiansyah15_ddd-arch_internal_app_usecases_user.ListResponseItem"
                             }
                         }
                     },
@@ -66,7 +66,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Nurdiansyah15_ddd-arch_internal_usecase_user.CreateRequest"
+                            "$ref": "#/definitions/github_com_Nurdiansyah15_ddd-arch_internal_app_usecases_user.CreateRequest"
                         }
                     }
                 ],
@@ -74,7 +74,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Nurdiansyah15_ddd-arch_internal_usecase_user.CreateResponse"
+                            "$ref": "#/definitions/github_com_Nurdiansyah15_ddd-arch_internal_app_usecases_user.CreateResponse"
                         }
                     },
                     "400": {
@@ -155,7 +155,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_Nurdiansyah15_ddd-arch_internal_usecase_user.UpdateRequest"
+                            "$ref": "#/definitions/github_com_Nurdiansyah15_ddd-arch_internal_app_usecases_user.UpdateRequest"
                         }
                     }
                 ],
@@ -163,7 +163,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_Nurdiansyah15_ddd-arch_internal_usecase_user.UpdateResponse"
+                            "$ref": "#/definitions/github_com_Nurdiansyah15_ddd-arch_internal_app_usecases_user.UpdateResponse"
                         }
                     },
                     "400": {
@@ -226,7 +226,7 @@ const docTemplate = `{
             "type": "object",
             "additionalProperties": {}
         },
-        "github_com_Nurdiansyah15_ddd-arch_internal_usecase_user.CreateRequest": {
+        "github_com_Nurdiansyah15_ddd-arch_internal_app_usecases_user.CreateRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -237,7 +237,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Nurdiansyah15_ddd-arch_internal_usecase_user.CreateResponse": {
+        "github_com_Nurdiansyah15_ddd-arch_internal_app_usecases_user.CreateResponse": {
             "type": "object",
             "properties": {
                 "email": {
@@ -248,7 +248,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Nurdiansyah15_ddd-arch_internal_usecase_user.ListResponseItem": {
+        "github_com_Nurdiansyah15_ddd-arch_internal_app_usecases_user.ListResponseItem": {
             "type": "object",
             "properties": {
                 "email": {
@@ -259,7 +259,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Nurdiansyah15_ddd-arch_internal_usecase_user.UpdateRequest": {
+        "github_com_Nurdiansyah15_ddd-arch_internal_app_usecases_user.UpdateRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -276,7 +276,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_Nurdiansyah15_ddd-arch_internal_usecase_user.UpdateResponse": {
+        "github_com_Nurdiansyah15_ddd-arch_internal_app_usecases_user.UpdateResponse": {
             "type": "object",
             "properties": {
                 "email": {

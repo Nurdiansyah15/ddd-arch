@@ -15,10 +15,6 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// compile-time assertions: ensure infra TokenService implements usecase contracts
-var _ useauth.TokenGenerator = (*token.TokenService)(nil)
-var _ useauth.TokenService = (*token.TokenService)(nil)
-
 func SetupAuthRoutes(r *gin.RouterGroup, db *sqlx.DB) {
 
 	userRepo := userrepo.NewUserRepositoryPG(db)
