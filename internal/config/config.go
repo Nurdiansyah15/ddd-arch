@@ -3,11 +3,13 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 )
 
 type Config struct {
 	App AppConfig
 	DB  DBConfig
+	JWT JWTConfig
 }
 
 type AppConfig struct {
@@ -26,6 +28,12 @@ type DBConfig struct {
 	SSLMode  string
 }
 
+type JWTConfig struct {
+	Secret     string
+	AccessTTL  time.Duration
+	RefreshTTL time.Duration
+}
+
 func Load() (*Config, error) {
 	cfg := &Config{
 		App: AppConfig{
@@ -41,6 +49,11 @@ func Load() (*Config, error) {
 			Password: getEnv("DB_PASSWORD", ""),
 			Name:     getEnv("DB_NAME", "postgres"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
+		},
+		JWT: JWTConfig{
+			Secret:     getEnv("JWT_SECRET", "dev-secret"),
+			AccessTTL:  getDurationEnv("JWT_ACCESS_TTL", 15*time.Minute),
+			RefreshTTL: getDurationEnv("JWT_REFRESH_TTL", 7*24*time.Hour),
 		},
 	}
 
@@ -62,6 +75,15 @@ func (db DBConfig) DSN() string {
 func getEnv(key, def string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
+	}
+	return def
+}
+
+func getDurationEnv(key string, def time.Duration) time.Duration {
+	if v := os.Getenv(key); v != "" {
+		if d, err := time.ParseDuration(v); err == nil {
+			return d
+		}
 	}
 	return def
 }

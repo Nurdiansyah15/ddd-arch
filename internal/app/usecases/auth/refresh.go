@@ -1,10 +1,8 @@
 package auth
 
 import (
-	"errors"
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/apperror"
 )
-
-var ErrInvalidRefresh = errors.New("invalid refresh token")
 
 // TokenService defines the minimal token operations required by the usecase.
 type TokenService interface {
@@ -31,12 +29,12 @@ type RefreshResponse struct {
 func (uc *RefreshUsecase) Execute(req RefreshRequest) (*RefreshResponse, error) {
 	uid, err := uc.TokenSvc.ValidateRefresh(req.RefreshToken)
 	if err != nil {
-		return nil, ErrInvalidRefresh
+		return nil, apperror.Unauthorized("invalid refresh token")
 	}
 
 	access, err := uc.TokenSvc.GenerateAccess(uid)
 	if err != nil {
-		return nil, err
+		return nil, apperror.Internal(err)
 	}
 
 	return &RefreshResponse{AccessToken: access}, nil

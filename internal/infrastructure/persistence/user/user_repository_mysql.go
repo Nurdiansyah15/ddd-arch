@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
+	"github.com/Nurdiansyah15/ddd-arch/internal/domain/master/user"
 	"github.com/jmoiron/sqlx"
 )
 

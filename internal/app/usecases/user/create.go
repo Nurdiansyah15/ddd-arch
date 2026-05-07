@@ -1,14 +1,18 @@
 package user
 
-import "github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
+import (
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/apperror"
+	"github.com/Nurdiansyah15/ddd-arch/internal/domain/master/user"
+)
 
 type CreateUsecase struct {
 	Repo        user.Repository
-	UserService *user.UserService // domain service
+	UserService *user.UserService
+	Hasher      user.PasswordHasher
 }
 
-func NewCreateUsecase(repo user.Repository, svc *user.UserService) *CreateUsecase {
-	return &CreateUsecase{Repo: repo, UserService: svc}
+func NewCreateUsecase(repo user.Repository, svc *user.UserService, hasher user.PasswordHasher) *CreateUsecase {
+	return &CreateUsecase{Repo: repo, UserService: svc, Hasher: hasher}
 }
 
 type CreateRequest struct {
@@ -22,14 +26,13 @@ type CreateResponse struct {
 }
 
 func (uc *CreateUsecase) Execute(req CreateRequest) (*CreateResponse, error) {
-	// Domain Service: cek apakah email sudah dipakai
 	if err := uc.UserService.CheckEmailAvailability(req.Email); err != nil {
-		return nil, err
+		return nil, apperror.Conflict("email already registered")
 	}
 
-	hash, err := user.HashPassword(req.Password)
+	hash, err := uc.Hasher.Hash(req.Password)
 	if err != nil {
-		return nil, err
+		return nil, apperror.Internal(err)
 	}
 
 	u := &user.User{
@@ -39,7 +42,7 @@ func (uc *CreateUsecase) Execute(req CreateRequest) (*CreateResponse, error) {
 	}
 
 	if err := uc.Repo.Create(u); err != nil {
-		return nil, err
+		return nil, apperror.Internal(err)
 	}
 
 	return &CreateResponse{ID: u.ID, Email: u.Email}, nil

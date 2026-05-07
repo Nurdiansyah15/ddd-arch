@@ -3,8 +3,10 @@ package auth
 import (
 	"net/http"
 
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/apperror"
 	authuc "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/auth"
 	useruc "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/user"
+	"github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http/handlers/respond"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,24 +17,23 @@ type AuthHandler struct {
 	ProfileUC  *useruc.ProfileUsecase
 }
 
+func NewAuthHandler(loginUC *authuc.LoginUsecase, registerUC *authuc.RegisterUsecase, refreshUC *authuc.RefreshUsecase, profileUC *useruc.ProfileUsecase) *AuthHandler {
+	return &AuthHandler{LoginUC: loginUC, RegisterUC: registerUC, RefreshUC: refreshUC, ProfileUC: profileUC}
+}
+
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		respond.Error(c, apperror.Validation("invalid request body"))
 		return
 	}
 
-	resp, err := h.LoginUC.Execute(authuc.LoginRequest{
-		Email:    req.Email,
-		Password: req.Password,
-	})
-
+	resp, err := h.LoginUC.Execute(authuc.LoginRequest{Email: req.Email, Password: req.Password})
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		respond.Error(c, err)
 		return
 	}
 
@@ -44,18 +45,14 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
-
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		respond.Error(c, apperror.Validation("invalid request body"))
 		return
 	}
 
-	resp, err := h.RegisterUC.Execute(authuc.RegisterRequest{
-		Email:    req.Email,
-		Password: req.Password,
-	})
+	resp, err := h.RegisterUC.Execute(authuc.RegisterRequest{Email: req.Email, Password: req.Password})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respond.Error(c, err)
 		return
 	}
 
@@ -65,29 +62,24 @@ func (h *AuthHandler) Register(c *gin.Context) {
 func (h *AuthHandler) GetMe(c *gin.Context) {
 	uidRaw, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		respond.Error(c, apperror.Unauthorized("unauthorized"))
 		return
 	}
 
 	uid, ok := uidRaw.(int64)
 	if !ok {
-		// sometimes numbers come as float64 from jwt
+		// jwt kadang menyimpan number sebagai float64
 		if f, ok := uidRaw.(float64); ok {
 			uid = int64(f)
 		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id"})
+			respond.Error(c, apperror.Internal(nil))
 			return
 		}
 	}
 
-	if h.ProfileUC == nil {
-		c.JSON(http.StatusOK, gin.H{"id": uid})
-		return
-	}
-
 	p, err := h.ProfileUC.Execute(uid)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respond.Error(c, err)
 		return
 	}
 
@@ -99,18 +91,13 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		RefreshToken string `json:"refresh_token"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
-		return
-	}
-
-	if h.RefreshUC == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "refresh not configured"})
+		respond.Error(c, apperror.Validation("invalid request body"))
 		return
 	}
 
 	resp, err := h.RefreshUC.Execute(authuc.RefreshRequest{RefreshToken: req.RefreshToken})
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid refresh token"})
+		respond.Error(c, err)
 		return
 	}
 

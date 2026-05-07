@@ -1,10 +1,14 @@
 package user
 
-import "github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
+import (
+	"errors"
 
-// ProfileUsecase depends on the domain Repository interface.
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/apperror"
+	domainuser "github.com/Nurdiansyah15/ddd-arch/internal/domain/master/user"
+)
+
 type ProfileUsecase struct {
-	Repo user.Repository
+	Repo domainuser.Repository
 }
 
 type ProfileResponse struct {
@@ -12,14 +16,17 @@ type ProfileResponse struct {
 	Email string `json:"email"`
 }
 
-func NewProfileUsecase(repo user.Repository) *ProfileUsecase {
+func NewProfileUsecase(repo domainuser.Repository) *ProfileUsecase {
 	return &ProfileUsecase{Repo: repo}
 }
 
 func (uc *ProfileUsecase) Execute(userID int64) (*ProfileResponse, error) {
 	u, err := uc.Repo.FindByID(userID)
 	if err != nil {
-		return nil, err
+		if errors.Is(err, domainuser.ErrUserNotFound) {
+			return nil, apperror.NotFound("user not found", err)
+		}
+		return nil, apperror.Internal(err)
 	}
 	return &ProfileResponse{ID: u.ID, Email: u.Email}, nil
 }

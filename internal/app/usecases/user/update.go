@@ -3,15 +3,17 @@ package user
 import (
 	"errors"
 
-	"github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/apperror"
+	domainuser "github.com/Nurdiansyah15/ddd-arch/internal/domain/master/user"
 )
 
 type UpdateUsecase struct {
-	Repo user.Repository
+	Repo   domainuser.Repository
+	Hasher domainuser.PasswordHasher
 }
 
-func NewUpdateUsecase(repo user.Repository) *UpdateUsecase {
-	return &UpdateUsecase{Repo: repo}
+func NewUpdateUsecase(repo domainuser.Repository, hasher domainuser.PasswordHasher) *UpdateUsecase {
+	return &UpdateUsecase{Repo: repo, Hasher: hasher}
 }
 
 type UpdateRequest struct {
@@ -26,24 +28,22 @@ type UpdateResponse struct {
 	Email string `json:"email"`
 }
 
-var ErrNotFound = errors.New("user not found")
-
 func (uc *UpdateUsecase) Execute(req UpdateRequest) (*UpdateResponse, error) {
 	u, err := uc.Repo.FindByID(req.ID)
 	if err != nil {
-		return nil, err
-	}
-	if u == nil {
-		return nil, ErrNotFound
+		if errors.Is(err, domainuser.ErrUserNotFound) {
+			return nil, apperror.NotFound("user not found", err)
+		}
+		return nil, apperror.Internal(err)
 	}
 
 	if req.Email != nil {
 		u.Email = *req.Email
 	}
 	if req.Password != nil {
-		h, err := user.HashPassword(*req.Password)
+		h, err := uc.Hasher.Hash(*req.Password)
 		if err != nil {
-			return nil, err
+			return nil, apperror.Internal(err)
 		}
 		u.PasswordHash = h
 	}
@@ -52,7 +52,7 @@ func (uc *UpdateUsecase) Execute(req UpdateRequest) (*UpdateResponse, error) {
 	}
 
 	if err := uc.Repo.Update(u); err != nil {
-		return nil, err
+		return nil, apperror.Internal(err)
 	}
 
 	return &UpdateResponse{ID: u.ID, Email: u.Email}, nil

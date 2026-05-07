@@ -1,7 +1,10 @@
 package user
 
 import (
-	"github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
+	"database/sql"
+	"errors"
+
+	"github.com/Nurdiansyah15/ddd-arch/internal/domain/master/user"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -22,6 +25,9 @@ func (r *userRepositoryPG) FindByEmail(email string) (*user.User, error) {
 	`, email)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, user.ErrUserNotFound
+		}
 		return nil, err
 	}
 
@@ -46,6 +52,9 @@ func (r *userRepositoryPG) FindByID(id int64) (*user.User, error) {
 	`, id)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, user.ErrUserNotFound
+		}
 		return nil, err
 	}
 

@@ -1,6 +1,9 @@
 package user
 
-import "github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
+import (
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/apperror"
+	"github.com/Nurdiansyah15/ddd-arch/internal/domain/master/user"
+)
 
 type ListUsecase struct {
 	Repo user.Repository
@@ -18,7 +21,7 @@ type ListResponseItem struct {
 func (uc *ListUsecase) Execute() ([]*ListResponseItem, error) {
 	users, err := uc.Repo.List()
 	if err != nil {
-		return nil, err
+		return nil, apperror.Internal(err)
 	}
 	out := make([]*ListResponseItem, 0, len(users))
 	for _, u := range users {

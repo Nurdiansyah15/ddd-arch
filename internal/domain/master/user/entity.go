@@ -3,6 +3,7 @@ package user
 import "errors"
 
 var (
+	ErrUserNotFound           = errors.New("user not found")
 	ErrUserInactive           = errors.New("user is inactive")
 	ErrInvalidPassword        = errors.New("invalid password")
 	ErrEmailAlreadyRegistered = errors.New("email already registered")
@@ -15,12 +16,12 @@ type User struct {
 	IsActive     bool
 }
 
-func (u *User) Authenticate(password string) error {
+func (u *User) Authenticate(password string, hasher PasswordHasher) error {
 	if !u.IsActive {
 		return ErrUserInactive
 	}
 
-	if !CheckPassword(password, u.PasswordHash) {
+	if !hasher.Check(password, u.PasswordHash) {
 		return ErrInvalidPassword
 	}
 

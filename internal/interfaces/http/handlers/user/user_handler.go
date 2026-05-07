@@ -4,19 +4,22 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/apperror"
 	useruc "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/user"
+	"github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http/handlers/respond"
 	"github.com/gin-gonic/gin"
 )
 
-type userHandler struct {
-	CreateUC *useruc.CreateUsecase
-	ListUC   *useruc.ListUsecase
-	UpdateUC *useruc.UpdateUsecase
-	DeleteUC *useruc.DeleteUsecase
+type UserHandler struct {
+	CreateUC  *useruc.CreateUsecase
+	ListUC    *useruc.ListUsecase
+	UpdateUC  *useruc.UpdateUsecase
+	DeleteUC  *useruc.DeleteUsecase
+	ProfileUC *useruc.ProfileUsecase
 }
 
-func NewUserHandler(createUC *useruc.CreateUsecase, listUC *useruc.ListUsecase, updateUC *useruc.UpdateUsecase, deleteUC *useruc.DeleteUsecase) *userHandler {
-	return &userHandler{CreateUC: createUC, ListUC: listUC, UpdateUC: updateUC, DeleteUC: deleteUC}
+func NewUserHandler(createUC *useruc.CreateUsecase, listUC *useruc.ListUsecase, updateUC *useruc.UpdateUsecase, deleteUC *useruc.DeleteUsecase, profileUC *useruc.ProfileUsecase) *UserHandler {
+	return &UserHandler{CreateUC: createUC, ListUC: listUC, UpdateUC: updateUC, DeleteUC: deleteUC, ProfileUC: profileUC}
 }
 
 // @Summary Create a new user
@@ -28,19 +31,19 @@ func NewUserHandler(createUC *useruc.CreateUsecase, listUC *useruc.ListUsecase, 
 // @Success 201 {object} useruc.CreateResponse
 // @Failure 400 {object} gin.H
 // @Router /api/v1/users [post]
-func (h *userHandler) Create(c *gin.Context) {
+func (h *UserHandler) Create(c *gin.Context) {
 	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		respond.Error(c, apperror.Validation("invalid request body"))
 		return
 	}
 
 	resp, err := h.CreateUC.Execute(useruc.CreateRequest{Email: req.Email, Password: req.Password})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respond.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusCreated, resp)
@@ -54,10 +57,10 @@ func (h *userHandler) Create(c *gin.Context) {
 // @Success 200 {object} []useruc.ListResponseItem
 // @Failure 500 {object} gin.H
 // @Router /api/v1/users [get]
-func (h *userHandler) List(c *gin.Context) {
+func (h *UserHandler) List(c *gin.Context) {
 	resp, err := h.ListUC.Execute()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respond.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
@@ -69,33 +72,23 @@ func (h *userHandler) List(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "User ID"
-// @Success 200 {object} gin.H
+// @Success 200 {object} useruc.ProfileResponse
 // @Failure 400 {object} gin.H
 // @Failure 404 {object} gin.H
 // @Router /api/v1/users/{id} [get]
-func (h *userHandler) Get(c *gin.Context) {
-	idParam := c.Param("id")
+func (h *UserHandler) Get(c *gin.Context) {
 	var id int64
-	_, err := fmt.Sscan(idParam, &id)
+	if _, err := fmt.Sscan(c.Param("id"), &id); err != nil {
+		respond.Error(c, apperror.Validation("invalid id"))
+		return
+	}
+
+	resp, err := h.ProfileUC.Execute(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		respond.Error(c, err)
 		return
 	}
-	// reuse list/find usecase via repo inside usecase; direct call to repo is avoided here
-	// we can call ProfileUsecase if present but to keep code self-contained, use Repo via CreateUC
-	if h.ListUC == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "not configured"})
-		return
-	}
-	// find by id using the repo behind createUC
-	// access repo from CreateUC
-	repo := h.CreateUC.Repo
-	u, err := repo.FindByID(id)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"id": u.ID, "email": u.Email})
+	c.JSON(http.StatusOK, resp)
 }
 
 // @Summary Update a user by ID
@@ -109,26 +102,26 @@ func (h *userHandler) Get(c *gin.Context) {
 // @Failure 400 {object} gin.H
 // @Failure 404 {object} gin.H
 // @Router /api/v1/users/{id} [put]
-func (h *userHandler) Update(c *gin.Context) {
-	idParam := c.Param("id")
+func (h *UserHandler) Update(c *gin.Context) {
 	var id int64
-	_, err := fmt.Sscan(idParam, &id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	if _, err := fmt.Sscan(c.Param("id"), &id); err != nil {
+		respond.Error(c, apperror.Validation("invalid id"))
 		return
 	}
+
 	var req struct {
 		Email    *string `json:"email"`
 		Password *string `json:"password"`
 		IsActive *bool   `json:"is_active"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		respond.Error(c, apperror.Validation("invalid request body"))
 		return
 	}
+
 	resp, err := h.UpdateUC.Execute(useruc.UpdateRequest{ID: id, Email: req.Email, Password: req.Password, IsActive: req.IsActive})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respond.Error(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, resp)
@@ -144,16 +137,15 @@ func (h *userHandler) Update(c *gin.Context) {
 // @Failure 400 {object} gin.H
 // @Failure 404 {object} gin.H
 // @Router /api/v1/users/{id} [delete]
-func (h *userHandler) Delete(c *gin.Context) {
-	idParam := c.Param("id")
+func (h *UserHandler) Delete(c *gin.Context) {
 	var id int64
-	_, err := fmt.Sscan(idParam, &id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+	if _, err := fmt.Sscan(c.Param("id"), &id); err != nil {
+		respond.Error(c, apperror.Validation("invalid id"))
 		return
 	}
+
 	if err := h.DeleteUC.Execute(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respond.Error(c, err)
 		return
 	}
 	c.Status(http.StatusNoContent)

@@ -1,20 +1,18 @@
 package auth
 
 import (
-	"errors"
-
-	"github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/apperror"
+	"github.com/Nurdiansyah15/ddd-arch/internal/domain/master/user"
 )
-
-var ErrInvalidCredentials = errors.New("invalid credentials")
 
 type LoginUsecase struct {
 	UserRepo   user.Repository
 	TokenMaker TokenGenerator
+	Hasher     user.PasswordHasher
 }
 
-func NewLoginUsecase(repo user.Repository, gen TokenGenerator) *LoginUsecase {
-	return &LoginUsecase{UserRepo: repo, TokenMaker: gen}
+func NewLoginUsecase(repo user.Repository, gen TokenGenerator, hasher user.PasswordHasher) *LoginUsecase {
+	return &LoginUsecase{UserRepo: repo, TokenMaker: gen, Hasher: hasher}
 }
 
 type LoginRequest struct {
@@ -30,21 +28,22 @@ type LoginResponse struct {
 func (uc *LoginUsecase) Execute(req LoginRequest) (*LoginResponse, error) {
 	u, err := uc.UserRepo.FindByEmail(req.Email)
 	if err != nil {
-		return nil, ErrInvalidCredentials
+		// jangan bocorkan apakah email ada atau tidak
+		return nil, apperror.Unauthorized("invalid credentials")
 	}
 
-	if err := u.Authenticate(req.Password); err != nil {
-		return nil, ErrInvalidCredentials
+	if err := u.Authenticate(req.Password, uc.Hasher); err != nil {
+		return nil, apperror.Unauthorized("invalid credentials")
 	}
 
 	access, err := uc.TokenMaker.GenerateAccess(u.ID)
 	if err != nil {
-		return nil, err
+		return nil, apperror.Internal(err)
 	}
 
 	refresh, err := uc.TokenMaker.GenerateRefresh(u.ID)
 	if err != nil {
-		return nil, err
+		return nil, apperror.Internal(err)
 	}
 
 	return &LoginResponse{

@@ -1,17 +1,18 @@
 package auth
 
 import (
-	"github.com/Nurdiansyah15/ddd-arch/internal/app/domain/master/user"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/Nurdiansyah15/ddd-arch/internal/app/apperror"
+	"github.com/Nurdiansyah15/ddd-arch/internal/domain/master/user"
 )
 
 type RegisterUsecase struct {
 	UserRepo    user.Repository
-	UserService *user.UserService // domain service
+	UserService *user.UserService
+	Hasher      user.PasswordHasher
 }
 
-func NewRegisterUsecase(repo user.Repository, svc *user.UserService) *RegisterUsecase {
-	return &RegisterUsecase{UserRepo: repo, UserService: svc}
+func NewRegisterUsecase(repo user.Repository, svc *user.UserService, hasher user.PasswordHasher) *RegisterUsecase {
+	return &RegisterUsecase{UserRepo: repo, UserService: svc, Hasher: hasher}
 }
 
 type RegisterRequest struct {
@@ -25,31 +26,24 @@ type RegisterResponse struct {
 }
 
 func (uc *RegisterUsecase) Execute(req RegisterRequest) (*RegisterResponse, error) {
-	// Domain Service: cek apakah email sudah dipakai
 	if err := uc.UserService.CheckEmailAvailability(req.Email); err != nil {
-		return nil, err
+		return nil, apperror.Conflict("email already registered")
 	}
 
-	hash, err := bcrypt.GenerateFromPassword(
-		[]byte(req.Password),
-		bcrypt.DefaultCost,
-	)
+	hash, err := uc.Hasher.Hash(req.Password)
 	if err != nil {
-		return nil, err
+		return nil, apperror.Internal(err)
 	}
 
-	user := &user.User{
+	u := &user.User{
 		Email:        req.Email,
 		PasswordHash: string(hash),
 		IsActive:     true,
 	}
 
-	if err := uc.UserRepo.Create(user); err != nil {
-		return nil, err
+	if err := uc.UserRepo.Create(u); err != nil {
+		return nil, apperror.Internal(err)
 	}
 
-	return &RegisterResponse{
-		ID:    user.ID,
-		Email: user.Email,
-	}, nil
+	return &RegisterResponse{ID: u.ID, Email: u.Email}, nil
 }

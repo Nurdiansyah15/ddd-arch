@@ -1,19 +1,26 @@
 package http
 
 import (
+	authhandler "github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http/handlers/auth"
+	userhandler "github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http/handlers/user"
+	authMiddleware "github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http/middlewares/auth"
 	authRoutes "github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http/routes/auth"
 	userRoutes "github.com/Nurdiansyah15/ddd-arch/internal/interfaces/http/routes/user"
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func RegisterRoutes(r *gin.Engine, db *sqlx.DB) {
+func RegisterRoutes(
+	r *gin.Engine,
+	authH *authhandler.AuthHandler,
+	userH *userhandler.UserHandler,
+	tokenSvc authMiddleware.TokenValidator,
+) {
 	api := r.Group("/api/v1")
 
-	authRoutes.SetupAuthRoutes(api, db)
-	userRoutes.SetupUserRoutes(api, db)
+	authRoutes.SetupAuthRoutes(api, authH, tokenSvc)
+	userRoutes.SetupUserRoutes(api, userH)
 
 	// Setup health check route
 	r.GET("/health", func(c *gin.Context) {
@@ -30,6 +37,5 @@ func RegisterRoutes(r *gin.Engine, db *sqlx.DB) {
 		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
-	// router.Static("/exports", "./public/exports")
 	r.Static("/public", "./public")
 }
