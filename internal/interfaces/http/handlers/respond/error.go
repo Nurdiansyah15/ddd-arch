@@ -8,8 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type errorBody struct {
+	Status     string `json:"status"`
+	StatusCode int    `json:"status_code"`
+	Errors     any    `json:"errors"`
+}
+
 // kindStatus memetakan Kind → HTTP status code.
-// Satu-satunya tempat di seluruh codebase yang tahu HTTP status code dari error.
 var kindStatus = map[apperror.Kind]int{
 	apperror.KindNotFound:     http.StatusNotFound,
 	apperror.KindConflict:     http.StatusConflict,
@@ -19,20 +24,28 @@ var kindStatus = map[apperror.Kind]int{
 	apperror.KindInternal:     http.StatusInternalServerError,
 }
 
-// Error mengubah error dari usecase menjadi JSON response yang tepat.
-// Untuk KindInternal, Cause tidak pernah dikirim ke client.
+// Error translates an apperror.AppError into a structured JSON error response.
+// The internal cause is never sent to the client.
 func Error(c *gin.Context, err error) {
 	var ae *apperror.AppError
 	if !errors.As(err, &ae) {
-		// error tidak terstruktur (tidak dari usecase) → internal
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		code := http.StatusInternalServerError
+		c.JSON(code, errorBody{
+			Status:     "error",
+			StatusCode: code,
+			Errors:     "internal server error",
+		})
 		return
 	}
 
-	status, ok := kindStatus[ae.Kind]
+	code, ok := kindStatus[ae.Kind]
 	if !ok {
-		status = http.StatusInternalServerError
+		code = http.StatusInternalServerError
 	}
 
-	c.JSON(status, gin.H{"error": ae.Message})
+	c.JSON(code, errorBody{
+		Status:     "error",
+		StatusCode: code,
+		Errors:     ae.Message,
+	})
 }

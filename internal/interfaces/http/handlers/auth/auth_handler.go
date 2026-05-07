@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"net/http"
-
 	"github.com/Nurdiansyah15/ddd-arch/internal/app/apperror"
 	authuc "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/auth"
 	useruc "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/user"
@@ -37,7 +35,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	respond.OK(c, "login successful", resp)
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
@@ -56,7 +54,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, resp)
+	respond.Created(c, "registration successful", resp)
 }
 
 func (h *AuthHandler) GetMe(c *gin.Context) {
@@ -83,7 +81,7 @@ func (h *AuthHandler) GetMe(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, p)
+	respond.OK(c, "profile retrieved", p)
 }
 
 func (h *AuthHandler) Refresh(c *gin.Context) {
@@ -101,5 +99,5 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	respond.OK(c, "token refreshed", resp)
 }

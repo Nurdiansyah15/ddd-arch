@@ -2,7 +2,6 @@ package user
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/Nurdiansyah15/ddd-arch/internal/app/apperror"
 	useruc "github.com/Nurdiansyah15/ddd-arch/internal/app/usecases/user"
@@ -46,7 +45,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 		respond.Error(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, resp)
+	respond.Created(c, "user created", resp)
 }
 
 // @Summary Get all users
@@ -63,7 +62,7 @@ func (h *UserHandler) List(c *gin.Context) {
 		respond.Error(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, resp)
+	respond.OK(c, "users retrieved", resp)
 }
 
 // @Summary Get a user by ID
@@ -88,7 +87,7 @@ func (h *UserHandler) Get(c *gin.Context) {
 		respond.Error(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, resp)
+	respond.OK(c, "user retrieved", resp)
 }
 
 // @Summary Update a user by ID
@@ -124,7 +123,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		respond.Error(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, resp)
+	respond.OK(c, "user updated", resp)
 }
 
 // @Summary Delete a user by ID
@@ -148,5 +147,5 @@ func (h *UserHandler) Delete(c *gin.Context) {
 		respond.Error(c, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	c.Status(204)
 }
